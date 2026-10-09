@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tree of Life Fellowship</title>
+
+  <!-- PWA & Native App Settings -->
+  <link rel="manifest" id="manifest-placeholder">
+  <meta name="theme-color" content="#001F3F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Tree Of Life">
+  <link rel="apple-touch-icon" href="image.png">
+
+  <!-- Dynamic Web App Manifest Setup for Mobile Icons -->
+  <script>
+    const manifestData = {
+      "name": "Tree of Life Fellowship",
+      "short_name": "Tree Of Life",
+      "start_url": "./index.html",
+      "display": "standalone",
+      "background_color": "#001F3F",
+      "theme_color": "#001F3F",
+      "icons": [
+        {
+          "src": "image.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        },
+        {
+          "src": "image.png",
+          "sizes": "512x512",
+          "type": "image/png"
+        }
+      ]
+    };
+    const stringManifest = JSON.stringify(manifestData);
+    const blob = new Blob([stringManifest], {type: 'application/json'});
+    const manifestURL = URL.createObjectURL(blob);
+    document.querySelector('#manifest-placeholder').setAttribute('href', manifestURL);
+  </script>
+
+  <!-- Supabase JS Client for Realtime Backend & Admin Auth -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --navy: #001F3F;
+      --navy-dark: #00142A;
+      --gold: #D4AF37;
+      --gold-light: #F3E5AB;
+      --white: #FFFFFF;
+      --gray: #F4F5F7;
+      --dark-gray: #333333;
+      --red-live: #FF3B30;
+      --cashapp-green: #00D632;
+      --venmo-blue: #008CFF;
+      --paypal-blue: #003087;
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      -webkit-tap-highlight-color: transparent; 
+    }
+
+    body { 
+      background-color: var(--gray); 
+      color: var(--dark-gray); 
+      display: flex; 
+      flex-direction: column; 
+      height: 100vh; 
+      overflow: hidden; 
+    }
+
+    /* Top App Bar */
+    header { 
+      background-color: var(--navy); 
+      color: var(--gold); 
+      padding: 12px 16px; 
+      text-align: center; 
+      font-size: 18px; 
+      font-weight: bold; 
+      border-bottom: 2px solid var(--gold); 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      z-index: 10;
+    }
+    header button { 
+      background: none; 
+      border: 1px solid var(--gold); 
+      color: var(--gold); 
+      padding: 6px 12px; 
+      border-radius: 6px; 
+      font-size: 12px; 
+      font-weight: bold; 
+      cursor: pointer;
+    }
+
+    main { 
+      flex: 1; 
+      overflow-y: auto; 
+      padding: 16px; 
+      padding-bottom: 95px; 
+    }
+
+    /* Install App Banner Styling */
+    .install-banner {
+      background: var(--navy);
+      border: 2px solid var(--gold);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #FFF;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .install-banner-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .install-banner-info img {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+    }
+    .btn-install-app {
+      background: var(--gold);
+      color: var(--navy);
+      font-weight: bold;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    /* Animated Header Banner */
+    .hero-banner {
+      background: radial-gradient(circle at center, #003366 0%, var(--navy-dark) 100%);
+      border: 2px solid var(--gold);
+      border-radius: 16px;
+      padding: 24px 16px;
+      text-align: center;
+      color: var(--white);
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent 45%, rgba(212, 175, 55, 0.15) 50%, transparent 55%);
+      animation: shine 6s infinite linear;
+    }
+
+    @keyframes shine {
+      0% { transform: translate(-30%, -30%) rotate(0deg); }
+      100% { transform: translate(30%, 30%) rotate(360deg); }
+    }
+
+    .logo-container {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 12px auto;
+      border-radius: 50%;
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .logo-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 50%;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .hero-banner h1 {
+      font-size: 22px;
+      color: var(--gold);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .hero-banner p {
+      font-size: 13px;
+      color: var(--gold-light);
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    /* Cards */
+    .card { 
+      background: var(--white); 
+      padding: 16px; 
+      border-radius: 12px; 
+      margin-bottom: 16px; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
+      border-left: 4px solid var(--gold); 
+    }
+    .card h3 { 
+      color: var(--navy); 
+      margin-bottom: 10px; 
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 17px;
+    }
+
+    /* Live Stream Beacon */
+    .live-card {
+      background: #FFF0F0;
+      border: 2px solid var(--red-live);
+      border-left: 6px solid var(--red-live);
+      display: none;
+    }
+
+    .live-beacon-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .live-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: bold;
+      color: var(--red-live);
+      font-size: 14px;
+    }
+
+    .beacon-dot {
+      width: 14px;
+      height: 14px;
+      background-color: var(--red-live);
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 0 rgba(255, 59, 48, 0.7);
+      animation: pulse-red 1.5s infinite;
+    }
+
+    @keyframes pulse-red {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7);
+      }
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(255, 59, 48, 0);
+      }
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(255, 59, 48, 0);
+      }
+    }
+
+    .btn-live {
+      background: var(--red-live);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      text-decoration: none;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    /* Embedded Video Frame */
+    .video-container {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      margin-bottom: 12px;
+    }
+    .video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    /* Schedule / Hours List */
+    .schedule-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #EEE;
+    }
+    .schedule-item:last-child { border-bottom: none; }
+    .schedule-day { font-weight: bold; color: var(--navy); font-size: 14px; }
+    .schedule-time { font-size: 13px; color: #555; text-align: right; }
+
+    /* Contact Information List */
+    .contact-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 10px 0;
+      border-bottom: 1px solid #EEE;
+    }
+    .contact-item:last-child { border-bottom: none; }
+    .contact-label { font-weight: bold; color: var(--navy); font-size: 13px; }
+    .contact-value { font-size: 14px; color: #004080; text-decoration: none; font-weight: 500; }
+    .contact-value:hover { text-decoration: underline; }
+
+    /* FAQ Section Styles */
+    .faq-container {
+      margin-top: 10px;
+    }
+    .faq-item {
+      background: #FAFAFA;
+      border: 1px solid #EAEAEA;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 12px 14px;
+      font-weight: bold;
+      color: var(--navy);
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      background: #F4F5F7;
+    }
+    .faq-answer {
+      padding: 12px 14px;
+      font-size: 13px;
+      color: #444;
+      line-height: 1.4;
+      border-top: 1px solid #EAEAEA;
+      background: #FFF;
+      display: none;
+    }
+    .faq-item.open .faq-answer {
+      display: block;
+    }
+
+    /* Controls & Forms */
+    input, textarea, select { 
+      width: 100%; 
+      padding: 10px; 
+      margin-top: 6px; 
+      margin-bottom: 10px; 
+      border: 1px solid #CCC; 
+      border-radius: 8px; 
+      font-size: 14px; 
+      background: #FFF;
+    }
+    
+    button.btn-primary { 
+      background: var(--gold); 
+      color: var(--navy); 
+      font-weight: bold; 
+      border: none; 
+      padding: 12px; 
+      border-radius: 8px; 
+      width: 100%; 
+      cursor: pointer; 
+      font-size: 15px; 
+    }
+
+    .admin-only { 
+      display: none; 
+      margin-top: 14px; 
+      padding: 14px; 
+      background: #FFF9E6; 
+      border: 1px dashed var(--gold); 
+      border-radius: 8px; 
+    }
+
+    .admin-giving-group {
+      background: #FFF;
+      border: 1px solid #E2D2A2;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .admin-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-weight: bold;
+      font-size: 13px;
+      color: var(--navy);
+    }
+
+    /* Giving Channel Cards */
+    .giving-card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 16px;
+      border-radius: 12px;
+      background: #FFF;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 12px;
+      border-left: 5px solid var(--gold);
+    }
+    .giving-card.cashapp { border-left-color: var(--cashapp-green); }
+    .giving-card.venmo { border-left-color: var(--venmo-blue); }
+    .giving-card.paypal { border-left-color: var(--paypal-blue); }
+
+    .giving-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .giving-header span.title {
+      font-weight: bold;
+      font-size: 16px;
+      color: var(--navy);
+    }
+    .giving-handle {
+      font-size: 14px;
+      color: #555;
+      font-weight: 600;
+    }
+    .btn-give-action {
+      display: inline-block;
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 14px;
+      color: #FFF;
+      background: var(--navy);
+      margin-top: 4px;
+    }
+    .btn-give-action.cashapp { background: var(--cashapp-green); }
+    .btn-give-action.venmo { background: var(--venmo-blue); }
+    .btn-give-action.paypal { background: var(--paypal-blue); }
+
+    .empty-giving-box {
+      text-align: center;
+      padding: 24px 16px;
+      background: #FFF;
+      border-radius: 12px;
+      border: 1px dashed #CCC;
+      color: #666;
+    }
+
+    /* Prayer Request Components */
+    .prayer-card {
+      background: #FFF;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border-left: 4px solid var(--navy);
+    }
+    .prayer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .prayer-author {
+      font-weight: bold;
+      font-size: 14px;
+      color: var(--navy);
+    }
+    .prayer-date {
+      font-size: 11px;
+      color: #888;
+    }
+    .prayer-text {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    .prayer-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid #EEE;
+    }
+    .btn-pray-counter {
+      background: #F0F4F8;
+      border: 1px solid #D0DCE5;
+      color: var(--navy);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-pray-counter.prayed {
+      background: var(--navy);
+      color: var(--gold);
+      border-color: var(--navy);
+    }
+
+    /* Community Tab / Bible Study Chat Styles */
+    .community-thread-card {
+      background: #FFF;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border-left: 4px solid var(--gold);
+    }
+    .community-thread-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 6px;
+    }
+    .community-thread-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .community-thread-topic-badge {
+      display: inline-block;
+      background: #FFF4D6;
+      color: #8C6D00;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .community-post-body {
+      font-size: 14px;
+      color: #333;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+    .community-media-preview {
+      margin-top: 8px;
+      margin-bottom: 10px;
+      max-width: 100%;
+      border-radius: 8px;
+      max-height: 220px;
+      object-fit: cover;
+      display: block;
+    }
+    .community-file-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #F4F5F7;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--navy);
+      text-decoration: none;
+      font-weight: 500;
+      margin-bottom: 10px;
+      border: 1px solid #DDD;
+    }
+    .community-comments-section {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px dashed #DDD;
+      background: #FAFAFA;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .community-comment-item {
+      font-size: 13px;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #EAEAEA;
+    }
+    .community-comment-item:last-child { border-bottom: none; margin-bottom: 0; }
+    .community-comment-author {
+      font-weight: bold;
+      color: var(--navy);
+    }
+
+    /* Bottom Navigation Bar */
+    nav { 
+      position: fixed; 
+      bottom: 0; 
+      width: 100%; 
+      background: var(--navy); 
+      display: flex; 
+      justify-content: space-around; 
+      padding: 10px 0; 
+      border-top: 2px solid var(--gold); 
+      z-index: 100;
+    }
+    nav button { 
+      background: none; 
+      border: none; 
+      color: #88A0C0; 
+      font-size: 10px; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      gap: 3px; 
+      cursor: pointer;
+      flex: 1;
+    }
+    nav button.active { color: var(--gold); font-weight: bold; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body>
+
+  <!-- App Header Bar -->
+  <header>
+    <span>Tree of Life Fellowship</span>
+    <button id="admin-btn" onclick="handleAdminAuth()">Admin Portal</button>
+  </header>
+
+  <main>
+    <!-- Simple Name Save Modal -->
+    <div id="name-modal" class="card">
+      <h3>Welcome to Tree of Life</h3>
+      <p style="font-size: 13px; color: #666; margin-top: 4px;">Enter your name to participate in community discussions, chat threads, and prayer requests:</p>
+      <input type="text" id="user-name-input" placeholder="Your Full Name">
+      <button class="btn-primary" onclick="saveUserName()">Save & Continue</button>
+    </div>
+
+    <!-- TAB 1: HOME -->
+    <div id="tab-home" class="tab-content active">
+
+      <!-- Install App Button at Top of Home Screen -->
+      <div id="install-app-banner" class="install-banner" style="display: none;">
+        <div class="install-banner-info">
+          <img src="image.png" alt="App Icon">
+          <div>
+            <strong style="font-size: 14px; color: var(--gold);">Install Tree of Life</strong>
+            <p style="font-size: 11px; opacity: 0.9;">Add to home screen for real-time updates</p>
+          </div>
+        </div>
+        <button class="btn-install-app" onclick="triggerInstallPrompt()">Install App</button>
+      </div>
+
+      <!-- Animated Header Banner -->
+      <div class="hero-banner">
+        <div class="logo-container">
+          <img src="image.png" alt="Tree of Life Fellowship Logo">
+        </div>
+        <h1>Tree of Life</h1>
+        <p>Fellowship & Community</p>
+      </div>
+
+      <!-- Live YouTube Stream Beacon -->
+      <div id="live-beacon-card" class="card live-card">
+        <div class="live-beacon-container">
+          <div class="live-status">
+            <span class="beacon-dot"></span>
+            <span>WE ARE LIVE NOW</span>
+          </div>
+          <button class="btn-live" onclick="switchTab('live')">
+            ▶ Watch Live
+          </button>
+        </div>
+      </div>
+
+      <!-- Service Hours & Gathering Times -->
+      <div class="card">
+        <h3>📅 Hours & Gatherings</h3>
+        <div class="schedule-item">
+          <div>
+            <div class="schedule-day">Wednesday Torah Study</div>
+          </div>
+          <div class="schedule-time">6:30 PM – 7:30 PM MST</div>
+        </div>
+        <div class="schedule-item">
+          <div>
+            <div class="schedule-day">Saturday Potluck</div>
+          </div>
+          <div class="schedule-time">1:00 PM MST</div>
+        </div>
+        <div class="schedule-item">
+          <div>
+            <div class="schedule-day">Saturday Service</div>
+          </div>
+          <div class="schedule-time">1:45 PM MST</div>
+        </div>
+      </div>
+
+      <!-- Contact Information & External Links Card -->
+      <div class="card">
+        <h3>📞 Contact & Community Links</h3>
+        <div class="contact-item">
+          <span class="contact-label">Official Website</span>
+          <a href="https://elccmt.org" target="_blank" class="contact-value">elccmt.org ↗</a>
+        </div>
+        <div class="contact-item">
+          <span class="contact-label">Men's Ministry</span>
+          <a href="https://calledtobemen.org" target="_blank" class="contact-value">CalledToBeMen.org ↗</a>
+        </div>
+        <div class="contact-item">
+          <span class="contact-label">Pastoral Inquiries</span>
+          <a href="mailto:pastorsteve@elccmt.org" class="contact-value">pastorsteve@elccmt.org</a>
+        </div>
+        <div class="contact-item">
+          <span class="contact-label">Administrative Inquiries</span>
+          <a href="mailto:admin@elccmt.org" class="contact-value">admin@elccmt.org</a>
+        </div>
+        <div class="contact-item">
+          <span class="contact-label">Audio / Video Inquiries & App Support</span>
+          <a href="tel:4063064060" class="contact-value">406-306-4060</a>
+        </div>
+      </div>
+
+      <!-- Frequently Asked Questions Section -->
+      <div class="card">
+        <h3>❓ Frequently Asked Questions</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 12px;">Find answers to common questions about our fellowship, gatherings, and community.</p>
+        
+        <div id="faq-homepage-container" class="faq-container">
+          <!-- Dynamically rendered FAQ items -->
+        </div>
+      </div>
+
+      <!-- Push Notification Opt-in Card -->
+      <div class="card" id="push-subscribe-card">
+        <h3>🔔 Stay Connected</h3>
+        <p style="font-size: 13px; color: #555; margin-bottom: 10px;">Receive instant targeted push notifications on your device whenever new Bible study community chat threads are started or announcements are made.</p>
+        <button class="btn-primary" onclick="requestNotificationPermission()">Enable Notifications</button>
+      </div>
+
+      <!-- Announcements Section -->
+      <div class="card">
+        <h3>📢 Announcements</h3>
+        <div id="announcements-container">
+          <p style="font-size: 13px; color: #888;">Loading announcements...</p>
+        </div>
+
+        <!-- Admin Only Control Panel -->
+        <div class="admin-only" id="admin-panel">
+          <h3 style="color: var(--navy); margin-bottom: 12px;">⚙️ Admin Control Panel</h3>
+          
+          <!-- Broadcast Control -->
+          <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed #DDD;">
+            <label style="font-size: 13px; font-weight: bold; color: var(--navy);">Live Broadcast Status:</label>
+            <button class="btn-primary" id="toggle-live-btn" style="margin-top: 6px; background: var(--red-live); color: white;" onclick="toggleLiveState()">
+              🔴 Toggle ON AIR Beacon
+            </button>
+            <button class="btn-primary" style="margin-top: 6px; background: var(--navy); color: var(--gold);" onclick="sendLivePushNotification()">
+              📲 Send "We Are Live" Push Notification
+            </button>
+          </div>
+
+          <!-- Announcement Creator -->
+          <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed #DDD;">
+            <h4 style="color: var(--navy); margin-bottom: 6px;">Create Announcement</h4>
+            <input type="text" id="post-title" placeholder="Announcement Title">
+            <textarea id="post-body" rows="3" placeholder="Write your message here..."></textarea>
+            <button class="btn-primary" onclick="createPost()">Publish Post</button>
+          </div>
+
+          <!-- Admin Add Event -->
+          <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed #DDD;">
+            <h4 style="color: var(--navy); margin-bottom: 6px;">🗓️ Add New Event</h4>
+            <input type="text" id="admin-event-title" placeholder="Event Title (e.g. Community Shabbat Dinner)">
+            <input type="text" id="admin-event-date" placeholder="Date & Time (e.g. Friday, Oct 16 at 6:00 PM)">
+            <input type="text" id="admin-event-location" placeholder="Location (e.g. Fellowship Hall)">
+            <textarea id="admin-event-desc" rows="2" placeholder="Event Description..."></textarea>
+            <button class="btn-primary" onclick="adminCreateEvent()">Publish Event</button>
+          </div>
+
+          <!-- Admin Add Volunteer Duty -->
+          <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed #DDD;">
+            <h4 style="color: var(--navy); margin-bottom: 6px;">🤲 Add Volunteer Duty & Shift</h4>
+            <input type="text" id="admin-vol-title" placeholder="Duty Title (e.g. Potluck Kitchen Setup)">
+            <input type="text" id="admin-vol-day" placeholder="Specific Day (e.g. Saturday, Oct 17)">
+            <textarea id="admin-vol-desc" rows="2" placeholder="Description & Requirements..."></textarea>
+            <button class="btn-primary" onclick="adminCreateVolunteerDuty()">Publish Volunteer Duty</button>
+          </div>
+
+          <!-- Admin Manage FAQs -->
+          <div style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed #DDD;">
+            <h4 style="color: var(--navy); margin-bottom: 6px;">❓ Manage FAQs</h4>
+            <input type="text" id="admin-faq-question" placeholder="Question">
+            <textarea id="admin-faq-answer" rows="2" placeholder="Answer..."></textarea>
+            <button class="btn-primary" onclick="adminCreateFaq()">Add FAQ Item</button>
+            <div id="admin-faq-list-manage" style="margin-top: 10px;"></div>
+          </div>
+
+          <!-- Giving Configuration Backend -->
+          <div>
+            <h4 style="color: var(--navy); margin-bottom: 8px;">🎁 Giving & Donation Setup</h4>
+            
+            <div class="admin-giving-group">
+              <div class="admin-toggle-row">
+                <span>💚 Cash App</span>
+                <input type="checkbox" id="admin-cashapp-enable" style="width:auto; margin:0;">
+              </div>
+              <input type="text" id="admin-cashapp-tag" placeholder="Cashtag (e.g. $TreeOfLife)">
+            </div>
+
+            <div class="admin-giving-group">
+              <div class="admin-toggle-row">
+                <span>💙 Venmo</span>
+                <input type="checkbox" id="admin-venmo-enable" style="width:auto; margin:0;">
+              </div>
+              <input type="text" id="admin-venmo-handle" placeholder="Username (e.g. @TreeOfLife)">
+            </div>
+
+            <div class="admin-giving-group">
+              <div class="admin-toggle-row">
+                <span>🅿️ PayPal</span>
+                <input type="checkbox" id="admin-paypal-enable" style="width:auto; margin:0;">
+              </div>
+              <input type="text" id="admin-paypal-url" placeholder="PayPal Link">
+            </div>
+
+            <button class="btn-primary" style="background: var(--navy); color: var(--gold);" onclick="saveGivingSettings()">
+              💾 Save Giving Options
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 2: EVENTS & VOLUNTEER TAB -->
+    <div id="tab-events" class="tab-content">
+      <div class="card" style="border-left-color: var(--navy);">
+        <h3>🗓️ Upcoming Fellowship Events</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 12px;">Join us for our upcoming community gatherings, studies, and special events.</p>
+      </div>
+      <div id="events-container"></div>
+
+      <div class="card" style="border-left-color: var(--gold); margin-top: 16px;">
+        <h3>🤲 Volunteer Opportunities & Sign Up</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 12px;">Choose a volunteer duty and specific day below to sign up and unlock team chat.</p>
+        
+        <label style="font-size: 13px; font-weight: bold; color: var(--navy);">Select Volunteer Duty & Day:</label>
+        <select id="volunteer-duty-select" onchange="onVolunteerDutySelected()" style="width: 100%; padding: 10px; margin-top: 6px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;">
+          <option value="">-- Choose an opportunity --</option>
+        </select>
+
+        <div id="volunteer-duty-details" style="display: none; background: #FAFAFA; border: 1px solid #EAEAEA; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+          <h4 id="vol-detail-title" style="color: var(--navy); margin-bottom: 4px;"></h4>
+          <p id="vol-detail-day" style="font-size: 12px; color: var(--gold); font-weight: bold; margin-bottom: 6px;"></p>
+          <p id="vol-detail-desc" style="font-size: 13px; color: #444; margin-bottom: 10px;"></p>
+          <div id="vol-action-area"></div>
+        </div>
+      </div>
+
+      <div class="card" id="volunteer-chat-section" style="margin-top: 16px; display: none;">
+        <h3 id="volunteer-chat-title">💬 Volunteer Shift Team Chat</h3>
+        <p id="volunteer-chat-subtitle" style="font-size: 12px; color: #666; margin-bottom: 10px;"></p>
+        <div id="volunteer-chat-messages" style="background: #FAFAFA; border: 1px solid #EAEAEA; border-radius: 8px; padding: 10px; height: 180px; overflow-y: auto; margin-bottom: 10px;"></div>
+        <div style="display: flex; gap: 6px;">
+          <input type="text" id="vol-chat-input" placeholder="Type team message..." style="margin: 0; font-size: 13px;">
+          <button onclick="sendVolunteerChatMessage()" style="background: var(--navy); color: var(--gold); border: none; padding: 0 16px; border-radius: 8px; font-weight: bold; cursor: pointer;">Send</button>
+        </div>
+        <button onclick="cancelVolunteerSignUp()" style="background: none; border: none; color: var(--red-live); font-size: 11px; font-weight: bold; cursor: pointer; margin-top: 10px;">Leave Shift / Exit Chat</button>
+      </div>
+
+      <div class="card" style="margin-top: 16px;">
+        <h3>📋 My Registered Shifts</h3>
+        <div id="my-volunteer-signups-list">
+          <p style="font-size: 13px; color: #888;">You have not signed up for any volunteer shifts yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: COMMUNITY BIBLE STUDY TAB -->
+    <div id="tab-community" class="tab-content">
+      <div class="card" style="border-left-color: var(--gold);">
+        <h3>📖 Community Bible Study & Chat Threads</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 12px;">Start chat threads under specific Bible study topics, upload study documents, pictures, or notes. Initial posts trigger targeted notifications to all members!</p>
+        
+        <button class="btn-primary" onclick="toggleCommunityPostForm()">＋ Start New Bible Study Thread</button>
+      </div>
+
+      <!-- Create Thread Form Modal/Card -->
+      <div id="community-create-card" class="card" style="display: none; background: #FFF9E6; border: 1px solid var(--gold);">
+        <h4 style="color: var(--navy); margin-bottom: 10px;">Create Bible Study Thread</h4>
+        
+        <label style="font-size: 13px; font-weight: bold; color: var(--navy);">Bible Study Topic:</label>
+        <select id="community-topic-select">
+          <option value="Torah Portion (Parashah)">Torah Portion (Parashah)</option>
+          <option value="Prophets & Writings (Haftarah/Ketuvim)">Prophets & Writings (Haftarah/Ketuvim)</option>
+          <option value="New Covenant Scriptures">New Covenant Scriptures</option>
+          <option value="Hebrew Word Studies">Hebrew Word Studies</option>
+          <option value="General Fellowship & Prayer Discussion">General Fellowship & Prayer Discussion</option>
+        </select>
+
+        <label style="font-size: 13px; font-weight: bold; color: var(--navy); margin-top: 8px; display: block;">Thread Title:</label>
+        <input type="text" id="community-thread-title" placeholder="e.g. Discussion on Genesis 12: Abraham's Calling">
+
+        <label style="font-size: 13px; font-weight: bold; color: var(--navy); margin-top: 8px; display: block;">Initial Post & Thoughts:</label>
+        <textarea id="community-thread-body" rows="3" placeholder="Share your insights, questions, or notes on this Bible study topic..."></textarea>
+
+        <label style="font-size: 13px; font-weight: bold; color: var(--navy); margin-top: 8px; display: block;">Upload Picture or File (Optional):</label>
+        <input type="file" id="community-file-input" accept="image/*,.pdf,.doc,.docx,.txt" style="background: #FFF; padding: 8px;">
+
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+          <button class="btn-primary" onclick="submitCommunityThread()" style="flex: 1;">Publish & Notify All</button>
+          <button onclick="toggleCommunityPostForm()" style="background: #CCC; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1;">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Feed of Community Threads -->
+      <div id="community-threads-container"></div>
+    </div>
+
+    <!-- TAB 4: PRAYER TAB -->
+    <div id="tab-prayer" class="tab-content">
+      <div class="card">
+        <h3>🙏 Submit a Prayer Request</h3>
+        <textarea id="prayer-text-input" rows="3" placeholder="Share your prayer request here..."></textarea>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <label style="font-size: 13px; color: #555; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="prayer-anonymous-check" style="width: auto; margin: 0;">
+            Post Anonymously
+          </label>
+        </div>
+        <button class="btn-primary" onclick="submitPrayerRequest()">Post Prayer Request</button>
+      </div>
+
+      <div id="prayer-wall-container"></div>
+    </div>
+
+    <!-- TAB 5: LIVE BROADCAST TAB -->
+    <div id="tab-live" class="tab-content">
+      <div class="card">
+        <h3>🔴 Live Stream & Fellowship Broadcast</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 12px;">Watch our services live directly from our official YouTube station.</p>
+        
+        <div class="video-container">
+          <iframe 
+            src="https://www.youtube.com/embed/live_stream?channel=UCx_EyjZSu2pq1kTBGo0A8lA" 
+            title="Tree of Life Live Stream"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            allowfullscreen>
+          </iframe>
+        </div>
+
+        <a href="https://www.youtube.com/channel/UCx_EyjZSu2pq1kTBGo0A8lA" target="_blank" class="btn-primary" style="display: block; text-align: center; text-decoration: none; line-height: 20px;">
+          Open Live Channel on YouTube
+        </a>
+      </div>
+    </div>
+
+    <!-- TAB 6: GIVE TAB -->
+    <div id="tab-give" class="tab-content">
+      <div class="hero-banner" style="padding: 16px; margin-bottom: 16px;">
+        <h1 style="font-size: 20px;">Tithes & Offerings</h1>
+        <p>"Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver."</p>
+        <p style="font-size: 11px; margin-top: 6px; opacity: 0.8;">— 2 Corinthians 9:7</p>
+      </div>
+
+      <div id="giving-channels-container"></div>
+    </div>
+
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav>
+    <button id="nav-home" class="active" onclick="switchTab('home')">
+      <span>🏠</span>
+      <span>Home</span>
+    </button>
+    <button id="nav-events" onclick="switchTab('events')">
+      <span>🗓️</span>
+      <span>Events & Vol</span>
+    </button>
+    <button id="nav-community" onclick="switchTab('community')">
+      <span>📖</span>
+      <span>Community</span>
+    </button>
+    <button id="nav-prayer" onclick="switchTab('prayer')">
+      <span>🙏</span>
+      <span>Prayer</span>
+    </button>
+    <button id="nav-live" onclick="switchTab('live')">
+      <span>🔴</span>
+      <span>Live</span>
+    </button>
+    <button id="nav-give" onclick="switchTab('give')">
+      <span>🎁</span>
+      <span>Give</span>
+    </button>
+  </nav>
+
+  <script>
+    // --- SUPABASE REALTIME BACKEND SETUP ---
+    const SUPABASE_URL = "https://yzmomxsxzhqgrtzzwto.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_L6HKxu-o8XC6enWnWADX_A_WDbbSKsY";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Dynamic State Cache (Synced with Supabase DB)
+    let announcements = [];
+    let prayers = [];
+    let communityThreads = [];
+    let eventsList = [];
+    let volunteerDuties = [];
+    let volunteerSignups = [];
+
+    // Initialize Supabase Realtime Listener for Instant Live Sync Across All Devices
+    supabaseClient
+      .channel('schema-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
+        console.log('Realtime DB Change Received:', payload);
+        fetchAnnouncements();
+        fetchPrayerWall();
+        fetchCommunityThreads();
+        fetchEvents();
+        fetchVolunteerDuties();
+        fetchVolunteerSignups();
+      })
+      .subscribe();
+
+    // --- PWA / MOBILE HOME SCREEN INSTALLATION LOGIC ---
+    let deferredPrompt;
+    const installBanner = document.getElementById('install-app-banner');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (installBanner) installBanner.style.display = 'flex';
+    });
+
+    function triggerInstallPrompt() {
+      if (!deferredPrompt) {
+        alert("To install, tap your browser's share icon and choose 'Add to Home Screen'.");
+        if (installBanner) installBanner.style.display = 'none';
+        return;
+      }
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        }
+        deferredPrompt = null;
+        if (installBanner) installBanner.style.display = 'none';
+      });
+    }
+
+    window.addEventListener('appinstalled', () => {
+      if (installBanner) installBanner.style.display = 'none';
+      deferredPrompt = null;
+    });
+
+    // --- APPLICATION STATE & USER SETUP ---
+    let isAdmin = false;
+    let isLiveNow = false;
+
+    let currentUserId = localStorage.getItem('tol_user_id') || ('user_' + Math.random().toString(36).substr(2, 9));
+    localStorage.setItem('tol_user_id', currentUserId);
+
+    let defaultGivingConfig = {
+      cashapp: { enabled: false, tag: '' },
+      venmo: { enabled: false, handle: '' },
+      paypal: { enabled: false, url: '' }
+    };
+
+    let givingConfig = JSON.parse(localStorage.getItem('tol_giving_config')) || defaultGivingConfig;
+    let faqList = JSON.parse(localStorage.getItem('tol_faqs')) || [
+      { id: 'faq_1', question: 'What can I expect during our gatherings?', answer: 'We gather for Torah study, fellowship, uplifting worship, and breaking bread together in a welcoming community environment.' },
+      { id: 'faq_2', question: 'Are children welcome at services?', answer: 'Yes, absolutely! We love families and children, and offer interactive learning and fellowship opportunities for all ages.' },
+      { id: 'faq_3', question: 'How can I get involved in community volunteering?', answer: 'You can check out our Events & Vol tab in this app to sign up for specific shifts and connect with fellow volunteers.' }
+    ];
+
+    const BLOCKED_WORDS = [
+      'hate', 'profanity', 'slur', 'abuse', 'kill', 'attack', 'idiot', 'stupid', 'curse', 'badword',
+      'damn', 'hell', 'crap', 'bastard', 'asshole', 'bitch', 'shit', 'fuck', 'idiots', 'suck'
+    ];
+
+    function containsHateSpeechOrProfanity(text) {
+      if (!text) return false;
+      const lower = text.toLowerCase();
+      return BLOCKED_WORDS.some(word => {
+        const regex = new RegExp(`\\b${word}\\b`, 'i');
+        return regex.test(lower);
+      });
+    }
+
+    // Navigation
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+
+      if (tabName === 'home') {
+        document.getElementById('tab-home').classList.add('active');
+        document.getElementById('nav-home').classList.add('active');
+      } else if (tabName === 'events') {
+        document.getElementById('tab-events').classList.add('active');
+        document.getElementById('nav-events').classList.add('active');
+        fetchEvents();
+        fetchVolunteerDuties();
+        fetchVolunteerSignups();
+      } else if (tabName === 'community') {
+        document.getElementById('tab-community').classList.add('active');
+        document.getElementById('nav-community').classList.add('active');
+        fetchCommunityThreads();
+      } else if (tabName === 'prayer') {
+        document.getElementById('tab-prayer').classList.add('active');
+        document.getElementById('nav-prayer').classList.add('active');
+        fetchPrayerWall();
+      } else if (tabName === 'live') {
+        document.getElementById('tab-live').classList.add('active');
+        document.getElementById('nav-live').classList.add('active');
+      } else if (tabName === 'give') {
+        document.getElementById('tab-give').classList.add('active');
+        document.getElementById('nav-give').classList.add('active');
+        renderGivingTab();
+      }
+    }
+
+    function saveUserName() {
+      const name = document.getElementById('user-name-input').value.trim();
+      if (name) {
+        localStorage.setItem('tol_user_name', name);
+        document.getElementById('name-modal').style.display = 'none';
+        alert("Name saved successfully!");
+      }
+    }
+
+    if (localStorage.getItem('tol_user_name')) {
+      const nameModal = document.getElementById('name-modal');
+      if (nameModal) nameModal.style.display = 'none';
+    }
+
+    function handleAdminAuth() {
+      const pass = prompt("Enter Admin Passcode:");
+      if (pass === "1234" || pass === "admin") {
+        isAdmin = true;
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+        populateAdminGivingFields();
+        fetchAnnouncements();
+        fetchPrayerWall();
+        fetchEvents();
+        fetchCommunityThreads();
+        renderAdminFaqList();
+        alert("Admin Mode Unlocked");
+      } else {
+        alert("Incorrect Admin Passcode");
+      }
+    }
+
+    function toggleLiveState() {
+      isLiveNow = !isLiveNow;
+      const liveBeacon = document.getElementById('live-beacon-card');
+      if (isLiveNow) {
+        liveBeacon.style.display = 'block';
+        alert("Live status is ON. Beacon displayed.");
+      } else {
+        liveBeacon.style.display = 'none';
+        alert("Live status is OFF.");
+      }
+    }
+
+    // --- SUPABASE DATABASE SYNC & OPERATIONAL FUNCTIONS ---
+
+    // 1. Announcements Sync
+    async function fetchAnnouncements() {
+      const { data, error } = await supabaseClient
+        .from('announcements')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        announcements = data;
+        renderAnnouncements();
+      }
+    }
+
+    async function createPost() {
+      const title = document.getElementById('post-title').value.trim();
+      const body = document.getElementById('post-body').value.trim();
+      if (!title || !body) return;
+
+      const { error } = await supabaseClient
+        .from('announcements')
+        .insert([{ title, body }]);
+
+      if (error) {
+        alert("Error creating announcement: " + error.message);
+      } else {
+        document.getElementById('post-title').value = '';
+        document.getElementById('post-body').value = '';
+        fetchAnnouncements();
+        alert("Announcement published to database!");
+      }
+    }
+
+    async function deletePost(id) {
+      if (confirm("Delete post?")) {
+        await supabaseClient.from('announcements').delete().eq('id', id);
+        fetchAnnouncements();
+      }
+    }
+
+    function renderAnnouncements() {
+      const container = document.getElementById('announcements-container');
+      if (!container) return;
+
+      if (announcements.length === 0) {
+        container.innerHTML = '<p style="font-size: 13px; color: #888;">No recent announcements.</p>';
+        return;
+      }
+
+      let html = '';
+      announcements.forEach(post => {
+        const postDate = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        html += `
+          <div style="border-bottom: 1px solid #EEE; padding: 10px 0;">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <strong style="color: var(--navy); font-size: 15px;">${post.title}</strong>
+              <span style="font-size: 11px; color: #888;">${postDate}</span>
+            </div>
+            <p style="font-size: 13px; color: #444; margin-top: 4px;">${post.body}</p>
+            ${isAdmin ? `<button onclick="deletePost('${post.id}')" style="background: none; border: none; color: var(--red-live); font-size: 11px; cursor: pointer; font-weight: bold;">Delete</button>` : ''}
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // 2. Community Bible Study Sync
+    async function fetchCommunityThreads() {
+      const { data, error } = await supabaseClient
+        .from('community_threads')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        communityThreads = data;
+        renderCommunityThreads();
+      }
+    }
+
+    async function submitCommunityThread() {
+      const topic = document.getElementById('community-topic-select').value;
+      const title = document.getElementById('community-thread-title').value.trim();
+      const body = document.getElementById('community-thread-body').value.trim();
+      const fileInput = document.getElementById('community-file-input');
+
+      if (!title || !body) {
+        alert("Please provide both a thread title and an initial post message.");
+        return;
+      }
+
+      if (containsHateSpeechOrProfanity(title) || containsHateSpeechOrProfanity(body)) {
+        alert("Your post contains prohibited or inappropriate language. Please revise.");
+        return;
+      }
+
+      const userName = localStorage.getItem('tol_user_name') || 'Community Member';
+
+      const insertThreadToSupabase = async (mediaUrl = '', fileName = '') => {
+        const { error } = await supabaseClient
+          .from('community_threads')
+          .insert([{
+            user_id: currentUserId,
+            author: userName,
+            topic: topic,
+            title: title,
+            body: body,
+            media_url: mediaUrl,
+            file_name: fileName,
+            comments: []
+          }]);
+
+        if (error) {
+          alert("Error saving thread: " + error.message);
+        } else {
+          document.getElementById('community-thread-title').value = '';
+          document.getElementById('community-thread-body').value = '';
+          if (fileInput) fileInput.value = '';
+          toggleCommunityPostForm();
+          fetchCommunityThreads();
+          triggerTargetedCommunityNotification(topic, title, userName);
+          alert("Bible Study thread published live!");
+        }
+      };
+
+      if (fileInput && fileInput.files && fileInput.files[0]) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const result = e.target.result;
+          insertThreadToSupabase(file.type.startsWith('image/') ? result : '', file.name);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        insertThreadToSupabase('', '');
+      }
+    }
+
+    async function submitCommunityComment(threadId) {
+      const input = document.getElementById(`community-comment-input-${threadId}`);
+      if (!input) return;
+      const text = input.value.trim();
+
+      if (!text) return;
+      if (containsHateSpeechOrProfanity(text)) {
+        alert("Comment contains prohibited or inappropriate language.");
+        return;
+      }
+
+      const thread = communityThreads.find(t => t.id === threadId);
+      if (!thread) return;
+
+      const userName = localStorage.getItem('tol_user_name') || 'Community Member';
+      const updatedComments = thread.comments || [];
+      updatedComments.push({
+        author: userName,
+        text: text,
+        date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+
+      const { error } = await supabaseClient
+        .from('community_threads')
+        .update({ comments: updatedComments })
+        .eq('id', threadId);
+
+      if (!error) {
+        input.value = '';
+        fetchCommunityThreads();
+      }
+    }
+
+    async function deleteCommunityThread(threadId) {
+      if (confirm("Are you sure you want to delete this Bible study thread?")) {
+        await supabaseClient.from('community_threads').delete().eq('id', threadId);
+        fetchCommunityThreads();
+      }
+    }
+
+    function renderCommunityThreads() {
+      const container = document.getElementById('community-threads-container');
+      if (!container) return;
+
+      if (communityThreads.length === 0) {
+        container.innerHTML = '<div class="card"><p style="font-size: 13px; color: #888; text-align: center;">No Bible study chat threads started yet. Be the first!</p></div>';
+        return;
+      }
+
+      let html = '';
+      communityThreads.forEach(t => {
+        let mediaHtml = t.media_url ? `<img src="${t.media_url}" alt="Attached image" class="community-media-preview">` : '';
+        let fileHtml = (t.file_name && !t.media_url) ? `<a href="#" class="community-file-link" onclick="alert('Attached document: ${t.file_name}')">📎 Attached File: ${t.file_name}</a>` : '';
+
+        let commentsHtml = '';
+        if (t.comments && t.comments.length > 0) {
+          commentsHtml = '<div class="community-comments-section">';
+          t.comments.forEach(c => {
+            commentsHtml += `
+              <div class="community-comment-item">
+                <span class="community-comment-author">${c.author}</span> <span style="font-size: 10px; color: #888;">(${c.date})</span>: ${c.text}
+              </div>
+            `;
+          });
+          commentsHtml += '</div>';
+        }
+
+        let deleteBtnHtml = (isAdmin || t.user_id === currentUserId) ? `
+          <button onclick="deleteCommunityThread('${t.id}')" style="background: none; border: none; color: var(--red-live); font-size: 11px; font-weight: bold; cursor: pointer;">Delete Thread</button>
+        ` : '';
+
+        const threadDate = new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        html += `
+          <div class="community-thread-card">
+            <div class="community-thread-meta">
+              <span>Posted by <strong>${t.author}</strong> on ${threadDate}</span>
+              ${deleteBtnHtml}
+            </div>
+            <div class="community-thread-topic-badge">📌 ${t.topic}</div>
+            <div class="community-thread-title">${t.title}</div>
+            <div class="community-post-body">${t.body}</div>
+            ${mediaHtml}
+            ${fileHtml}
+
+            ${commentsHtml}
+
+            <div style="margin-top: 12px; display: flex; gap: 6px;">
+              <input type="text" id="community-comment-input-${t.id}" placeholder="Reply to this Bible study thread..." style="margin: 0; font-size: 13px; padding: 8px;">
+              <button onclick="submitCommunityComment('${t.id}')" style="background: var(--navy); color: var(--gold); border: none; padding: 0 14px; border-radius: 8px; font-weight: bold; font-size: 12px; cursor: pointer; white-space: nowrap;">Send</button>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // 3. Events Sync
+    async function fetchEvents() {
+      const { data, error } = await supabaseClient
+        .from('events')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        eventsList = data;
+        renderEvents();
+      }
+    }
+
+    async function adminCreateEvent() {
+      const title = document.getElementById('admin-event-title').value.trim();
+      const date = document.getElementById('admin-event-date').value.trim();
+      const location = document.getElementById('admin-event-location').value.trim();
+      const desc = document.getElementById('admin-event-desc').value.trim();
+      if (!title || !date) return;
+
+      const { error } = await supabaseClient
+        .from('events')
+        .insert([{ title, event_date: date, location: location || 'Fellowship Center', description: desc || '' }]);
+
+      if (!error) {
+        document.getElementById('admin-event-title').value = '';
+        document.getElementById('admin-event-date').value = '';
+        document.getElementById('admin-event-location').value = '';
+        document.getElementById('admin-event-desc').value = '';
+        fetchEvents();
+        alert("Event published live!");
+      }
+    }
+
+    async function deleteEvent(eventId) {
+      if (confirm("Delete event?")) {
+        await supabaseClient.from('events').delete().eq('id', eventId);
+        fetchEvents();
+      }
+    }
+
+    function renderEvents() {
+      const container = document.getElementById('events-container');
+      if (!container) return;
+
+      if (eventsList.length === 0) {
+        container.innerHTML = '<div class="card"><p style="font-size: 13px; color: #888; text-align: center;">No upcoming events.</p></div>';
+        return;
+      }
+
+      let html = '';
+      eventsList.forEach(ev => {
+        html += `
+          <div class="card" style="border-left-color: var(--navy);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <h3 style="color: var(--navy); margin-bottom: 4px;">${ev.title}</h3>
+              ${isAdmin ? `<button onclick="deleteEvent('${ev.id}')" style="background:none; border:none; color:var(--red-live); font-size:12px; font-weight:bold; cursor:pointer;">Delete</button>` : ''}
+            </div>
+            <p style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 4px;">📅 ${ev.event_date}</p>
+            <p style="font-size: 12px; color: #555; margin-bottom: 8px;">📍 ${ev.location}</p>
+            ${ev.description ? `<p style="font-size: 13px; color: #444;">${ev.description}</p>` : ''}
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // 4. Prayer Wall Sync
+    async function fetchPrayerWall() {
+      const { data, error } = await supabaseClient
+        .from('prayers')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        prayers = data;
+        renderPrayerWall();
+      }
+    }
+
+    async function submitPrayerRequest() {
+      const textInput = document.getElementById('prayer-text-input');
+      const isAnonymous = document.getElementById('prayer-anonymous-check').checked;
+      const text = textInput.value.trim();
+      if (!text) return;
+
+      const userName = isAnonymous ? 'Anonymous' : (localStorage.getItem('tol_user_name') || 'Member');
+      
+      const { error } = await supabaseClient
+        .from('prayers')
+        .insert([{
+          user_id: currentUserId,
+          author: userName,
+          text: text,
+          pray_count: 0,
+          prayed_users: []
+        }]);
+
+      if (!error) {
+        textInput.value = '';
+        fetchPrayerWall();
+        alert("Prayer request saved and shared!");
+      }
+    }
+
+    async function togglePrayCounter(id) {
+      const p = prayers.find(item => item.id === id);
+      if (!p) return;
+
+      let prayedUsers = p.prayed_users || [];
+      let prayCount = p.pray_count || 0;
+
+      const idx = prayedUsers.indexOf(currentUserId);
+      if (idx === -1) {
+        prayedUsers.push(currentUserId);
+        prayCount += 1;
+      } else {
+        prayedUsers.splice(idx, 1);
+        prayCount = Math.max(0, prayCount - 1);
+      }
+
+      await supabaseClient
+        .from('prayers')
+        .update({ pray_count: prayCount, prayed_users: prayedUsers })
+        .eq('id', id);
+
+      fetchPrayerWall();
+    }
+
+    async function deletePrayer(id) {
+      if (confirm("Delete prayer?")) {
+        await supabaseClient.from('prayers').delete().eq('id', id);
+        fetchPrayerWall();
+      }
+    }
+
+    function renderPrayerWall() {
+      const container = document.getElementById('prayer-wall-container');
+      if (!container) return;
+
+      if (prayers.length === 0) {
+        container.innerHTML = '<div class="card"><p style="font-size: 13px; color: #888; text-align: center;">No prayer requests.</p></div>';
+        return;
+      }
+      let html = '';
+      prayers.forEach(p => {
+        const hasPrayed = (p.prayed_users || []).includes(currentUserId);
+        const prayerDate = new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        html += `
+          <div class="prayer-card">
+            <div class="prayer-header"><span class="prayer-author">${p.author}</span><span class="prayer-date">${prayerDate}</span></div>
+            <div class="prayer-text">${p.text}</div>
+            <div class="prayer-footer">
+              <button class="btn-pray-counter ${hasPrayed ? 'prayed' : ''}" onclick="togglePrayCounter('${p.id}')">🙏 Pray (${p.pray_count || 0})</button>
+              ${isAdmin ? `<button onclick="deletePrayer('${p.id}')" style="background:none; border:none; color:var(--red-live); font-size:12px; font-weight:bold; cursor:pointer;">Delete</button>` : ''}
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // 5. Volunteer Duties & Signups Sync
+    async function fetchVolunteerDuties() {
+      const { data, error } = await supabaseClient
+        .from('volunteer_duties')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        volunteerDuties = data;
+        renderVolunteerDropdown();
+      }
+    }
+
+    async function fetchVolunteerSignups() {
+      const { data, error } = await supabaseClient
+        .from('volunteer_signups')
+        .select('*');
+
+      if (!error && data) {
+        volunteerSignups = data;
+        renderMyVolunteerSignups();
+      }
+    }
+
+    async function adminCreateVolunteerDuty() {
+      const title = document.getElementById('admin-vol-title').value.trim();
+      const day = document.getElementById('admin-vol-day').value.trim();
+      const desc = document.getElementById('admin-vol-desc').value.trim();
+      if (!title || !day) return;
+
+      const { error } = await supabaseClient
+        .from('volunteer_duties')
+        .insert([{ title, duty_day: day, description: desc || '' }]);
+
+      if (!error) {
+        document.getElementById('admin-vol-title').value = '';
+        document.getElementById('admin-vol-day').value = '';
+        document.getElementById('admin-vol-desc').value = '';
+        fetchVolunteerDuties();
+        alert("Volunteer duty added!");
+      }
+    }
+
+    function renderVolunteerDropdown() {
+      const select = document.getElementById('volunteer-duty-select');
+      if (!select) return;
+      let html = '<option value="">-- Choose an opportunity --</option>';
+      volunteerDuties.forEach(d => {
+        html += `<option value="${d.id}">${d.title} (${d.duty_day})</option>`;
+      });
+      select.innerHTML = html;
+    }
+
+    function onVolunteerDutySelected() {
+      const select = document.getElementById('volunteer-duty-select');
+      const dutyId = select.value;
+      const detailsBox = document.getElementById('volunteer-duty-details');
+
+      if (!dutyId) {
+        detailsBox.style.display = 'none';
+        return;
+      }
+
+      const duty = volunteerDuties.find(d => d.id === dutyId);
+      if (!duty) return;
+
+      document.getElementById('vol-detail-title').innerText = duty.title;
+      document.getElementById('vol-detail-day').innerText = `📅 Specific Day: ${duty.duty_day}`;
+      document.getElementById('vol-detail-desc').innerText = duty.description;
+      detailsBox.style.display = 'block';
+
+      const isSignedUp = volunteerSignups.some(s => s.duty_id === dutyId && s.user_id === currentUserId);
+      const actionArea = document.getElementById('vol-action-area');
+
+      if (isSignedUp) {
+        actionArea.innerHTML = `<p style="color: var(--cashapp-green); font-weight: bold; font-size: 13px;">✅ You are signed up for this shift!</p>`;
+      } else {
+        actionArea.innerHTML = `<button class="btn-primary" onclick="signUpForVolunteerDuty('${duty.id}')">Sign Up for This Shift</button>`;
+      }
+    }
+
+    async function signUpForVolunteerDuty(dutyId) {
+      const userName = localStorage.getItem('tol_user_name');
+      if (!userName) {
+        alert("Please save your name at the top first.");
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from('volunteer_signups')
+        .insert([{ duty_id: dutyId, user_id: currentUserId, user_name: userName }]);
+
+      if (!error) {
+        alert("Successfully signed up!");
+        fetchVolunteerSignups();
+        onVolunteerDutySelected();
+      }
+    }
+
+    function renderMyVolunteerSignups() {
+      const container = document.getElementById('my-volunteer-signups-list');
+      if (!container) return;
+
+      const mySignupDutyIds = volunteerSignups.filter(s => s.user_id === currentUserId).map(s => s.duty_id);
+      const myShifts = volunteerDuties.filter(d => mySignupDutyIds.includes(d.id));
+
+      if (myShifts.length === 0) {
+        container.innerHTML = '<p style="font-size: 13px; color: #888;">You have not signed up for any volunteer shifts yet.</p>';
+        return;
+      }
+
+      let html = '';
+      myShifts.forEach(d => {
+        html += `
+          <div style="padding: 6px 0; border-bottom: 1px solid #EEE; display: flex; justify-content: space-between; align-items: center;">
+            <div><strong style="color: var(--navy); font-size: 13px;">${d.title}</strong><div style="font-size: 11px; color: var(--gold); font-weight: bold;">${d.duty_day}</div></div>
+            <button onclick="document.getElementById('volunteer-duty-select').value='${d.id}'; onVolunteerDutySelected(); switchTab('events');" style="background: var(--navy); color: var(--gold); border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Open</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // FAQs Setup
+    function toggleFaqItem(faqId) {
+      const item = document.getElementById(faqId);
+      if (item) item.classList.toggle('open');
+    }
+
+    function renderFaqHomepage() {
+      const container = document.getElementById('faq-homepage-container');
+      if (!container) return;
+
+      if (faqList.length === 0) {
+        container.innerHTML = '<p style="font-size: 13px; color: #888;">No FAQs available right now.</p>';
+        return;
+      }
+
+      let html = '';
+      faqList.forEach((faq, index) => {
+        const itemId = 'faq_item_' + index;
+        html += `
+          <div class="faq-item" id="${itemId}">
+            <div class="faq-question" onclick="toggleFaqItem('${itemId}')">
+              <span>${faq.question}</span>
+              <span>▼</span>
+            </div>
+            <div class="faq-answer">${faq.answer}</div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function adminCreateFaq() {
+      const question = document.getElementById('admin-faq-question').value.trim();
+      const answer = document.getElementById('admin-faq-answer').value.trim();
+      if (!question || !answer) return;
+
+      faqList.push({ id: 'faq_' + Date.now(), question, answer });
+      localStorage.setItem('tol_faqs', JSON.stringify(faqList));
+      document.getElementById('admin-faq-question').value = '';
+      document.getElementById('admin-faq-answer').value = '';
+      renderFaqHomepage();
+      renderAdminFaqList();
+      alert("FAQ added!");
+    }
+
+    function deleteFaq(faqId) {
+      if (confirm("Delete FAQ?")) {
+        faqList = faqList.filter(f => f.id !== faqId);
+        localStorage.setItem('tol_faqs', JSON.stringify(faqList));
+        renderFaqHomepage();
+        renderAdminFaqList();
+      }
+    }
+
+    function renderAdminFaqList() {
+      const container = document.getElementById('admin-faq-list-manage');
+      if (!container) return;
+      let html = '';
+      faqList.forEach(faq => {
+        html += `
+          <div style="background: #FFF; padding: 6px; border-radius: 4px; border: 1px solid #EAEAEA; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; font-weight: bold; color: var(--navy); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px;">${faq.question}</span>
+            <button onclick="deleteFaq('${faq.id}')" style="background: none; border: none; color: var(--red-live); font-size: 11px; cursor: pointer;">Delete</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function toggleCommunityPostForm() {
+      const card = document.getElementById('community-create-card');
+      if (card) {
+        card.style.display = card.style.display === 'none' ? 'block' : 'none';
+      }
+    }
+
+    function triggerTargetedCommunityNotification(topic, title, author) {
+      if (window.Notification && Notification.permission === "granted") {
+        new Notification(`📖 New Bible Study Thread: ${topic}`, {
+          body: `${author} posted "${title}". Tap to join the chat!`,
+          icon: "image.png",
+          tag: "community-bible-study"
+        });
+      }
+    }
+
+    // Giving
+    function populateAdminGivingFields() {
+      document.getElementById('admin-cashapp-enable').checked = givingConfig.cashapp.enabled;
+      document.getElementById('admin-cashapp-tag').value = givingConfig.cashapp.tag || '';
+      document.getElementById('admin-venmo-enable').checked = givingConfig.venmo.enabled;
+      document.getElementById('admin-venmo-handle').value = givingConfig.venmo.handle || '';
+      document.getElementById('admin-paypal-enable').checked = givingConfig.paypal.enabled;
+      document.getElementById('admin-paypal-url').value = givingConfig.paypal.url || '';
+    }
+
+    function saveGivingSettings() {
+      givingConfig = {
+        cashapp: { enabled: document.getElementById('admin-cashapp-enable').checked, tag: document.getElementById('admin-cashapp-tag').value.trim() },
+        venmo: { enabled: document.getElementById('admin-venmo-enable').checked, handle: document.getElementById('admin-venmo-handle').value.trim() },
+        paypal: { enabled: document.getElementById('admin-paypal-enable').checked, url: document.getElementById('admin-paypal-url').value.trim() }
+      };
+      localStorage.setItem('tol_giving_config', JSON.stringify(givingConfig));
+      alert("Giving saved!");
+      renderGivingTab();
+    }
+
+    function renderGivingTab() {
+      const container = document.getElementById('giving-channels-container');
+      if (!container) return;
+      let html = '';
+      if (givingConfig.cashapp && givingConfig.cashapp.enabled) {
+        html += `<div class="giving-card cashapp"><div class="giving-header"><span class="title">💚 Cash App</span><span class="giving-handle">$${givingConfig.cashapp.tag}</span></div><a href="https://cash.app/$${givingConfig.cashapp.tag}" target="_blank" class="btn-give-action cashapp">Give via Cash App</a></div>`;
+      }
+      if (givingConfig.venmo && givingConfig.venmo.enabled) {
+        html += `<div class="giving-card venmo"><div class="giving-header"><span class="title">💙 Venmo</span><span class="giving-handle">@${givingConfig.venmo.handle}</span></div><a href="https://venmo.com/${givingConfig.venmo.handle}" target="_blank" class="btn-give-action venmo">Give via Venmo</a></div>`;
+      }
+      if (!html) {
+        html = `<div class="empty-giving-box card"><h3>🤝 Online Giving</h3><p style="font-size: 13px; color: #666;">Digital giving options are being set up.</p></div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    function requestNotificationPermission() {
+      if (!("Notification" in window)) return;
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          alert("Notifications enabled!");
+          document.getElementById('push-subscribe-card').style.display = 'none';
+        }
+      });
+    }
+
+    if (window.Notification && Notification.permission === "granted") {
+      const subCard = document.getElementById('push-subscribe-card');
+      if (subCard) subCard.style.display = 'none';
+    }
+
+    // Initial Data Load
+    fetchAnnouncements();
+    fetchPrayerWall();
+    fetchCommunityThreads();
+    fetchEvents();
+    fetchVolunteerDuties();
+    fetchVolunteerSignups();
+
+    renderGivingTab();
+    renderFaqHomepage();
+  </script>
+</body>
+</html>
